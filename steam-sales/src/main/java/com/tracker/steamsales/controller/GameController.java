@@ -40,7 +40,7 @@ public class GameController {
             return ResponseEntity.badRequest().body("Failed to retrieve data from Steam for ID " + appId);
         }
 
-        Game game = new Game(data.name, appId);
+        Game game = new Game(data.name, appId, data.headerImage);
         gameRepository.save(game);
 
         GamePrice price = new GamePrice(game, data.finalPrice, data.initialPrice, data.discountPercent);

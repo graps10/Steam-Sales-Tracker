@@ -34,10 +34,12 @@ public class SteamApiService {
                         double initialPrice = priceNode.get("initial").asDouble() / 100;
                         double finalPrice = priceNode.get("final").asDouble() / 100;
                         int discountPercent = priceNode.get("discount_percent").asInt();
+                        String headerImage = dataNode.has("header_image") ? dataNode.get("header_image").asText() : "";
 
-                        return new SteamGameData(name, initialPrice, finalPrice, discountPercent);
+                        return new SteamGameData(name, initialPrice, finalPrice, discountPercent, headerImage);
                     } else {
-                        return new SteamGameData(name, 0.0, 0.0, 0);
+                        String headerImage = dataNode.has("header_image") ? dataNode.get("header_image").asText() : "";
+                        return new SteamGameData(name, 0.0, 0.0, 0, headerImage);
                     }
                 }
             }
@@ -53,12 +55,14 @@ public class SteamApiService {
         public double initialPrice;
         public double finalPrice;
         public int discountPercent;
+        public String headerImage;
 
-        public SteamGameData(String name, double initialPrice, double finalPrice, int discountPercent) {
+        public SteamGameData(String name, double initialPrice, double finalPrice, int discountPercent, String headerImage) {
             this.name = name;
             this.initialPrice = initialPrice;
             this.finalPrice = finalPrice;
             this.discountPercent = discountPercent;
+            this.headerImage = headerImage;
         }
     }
 

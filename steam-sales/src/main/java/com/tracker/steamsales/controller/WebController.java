@@ -24,7 +24,7 @@ public class WebController {
 
     @GetMapping("/")
     public String index(Model model) {
-       List<Game> games = gameRepository.findAllByOrderByIdDesc();
+        List<Game> games = gameRepository.findAllByOrderByIdDesc();
         List<GameViewDto> gameDtos = new ArrayList<>();
 
         for (Game game : games) {
@@ -36,7 +36,8 @@ public class WebController {
                         game.getTitle(),
                         price.getFinalPrice(),
                         price.getInitialPrice(),
-                        price.getDiscountPercent()
+                        price.getDiscountPercent(),
+                        game.getHeaderImage()
                 ));
             }
         }
@@ -51,19 +52,35 @@ public class WebController {
         private Double finalPrice;
         private Double initialPrice;
         private Integer discountPercent;
+        private String headerImage;
 
-        public GameViewDto(String steamAppId, String title, Double finalPrice, Double initialPrice, Integer discountPercent) {
+        public GameViewDto(String steamAppId, String title, Double finalPrice, Double initialPrice, Integer discountPercent, String headerImage) {
             this.steamAppId = steamAppId;
             this.title = title;
-            this.finalPrice = finalPrice;
-            this.initialPrice = initialPrice;
-            this.discountPercent = discountPercent;
+            this.finalPrice = finalPrice != null ? finalPrice : 0.0;
+            this.initialPrice = initialPrice != null ? initialPrice : 0.0;
+            this.discountPercent = discountPercent != null ? discountPercent : 0;
+            this.headerImage = headerImage;
         }
 
         public String getSteamAppId() { return steamAppId; }
         public String getTitle() { return title; }
-        public Double getFinalPrice() { return finalPrice; }
-        public Double getInitialPrice() { return initialPrice; }
-        public Integer getDiscountPercent() { return discountPercent; }
+        public String getHeaderImage() { return headerImage; }
+        
+        public String getFinalPriceText() {
+            return this.finalPrice == 0.0 ? "Free" : this.finalPrice + " ₴";
+        }
+
+        public String getInitialPriceText() {
+            return this.initialPrice + " ₴";
+        }
+
+        public String getDiscountText() {
+            return this.discountPercent > 0 ? "-" + this.discountPercent + "%" : "-";
+        }
+
+        public boolean isDiscounted() {
+            return this.discountPercent > 0;
+        }
     }
 }

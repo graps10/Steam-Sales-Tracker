@@ -16,12 +16,16 @@ public class Game
     @Column(name = "steam_app_id", unique = true)
     private String steamAppId;
 
+    @Column(name = "header_image")
+    private String headerImage;
+
     public Game() {
     }
 
-    public Game(String title, String steamAppId) {
+    public Game(String title, String steamAppId, String headerImage) {
         this.title = title;
         this.steamAppId = steamAppId;
+        this.headerImage = headerImage;
     }
 
     public Long getId() { return id; }
@@ -32,4 +36,7 @@ public class Game
 
     public String getSteamAppId() { return steamAppId; }
     public void setSteamAppId(String steamAppId) { this.steamAppId = steamAppId; }
+
+    public String getHeaderImage() { return headerImage; }
+    public void setHeaderImage(String headerImage) { this.headerImage = headerImage; }
 }

@@ -5,106 +5,84 @@
     <title>Steam Sales Tracker</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1b2838; color: #c7d5e0; margin: 0; padding: 40px; }
-        h1 { color: #ffffff; }
-        .container { max-width: 800px; margin: 0 auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #2a475e; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-        th, td { padding: 15px; text-align: left; }
+        h1 { color: #ffffff; text-align: center; margin-bottom: 40px; font-size: 2.5em; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .container { max-width: 1200px; margin: 0 auto; }
         
-        th:nth-child(3), td:nth-child(3),
-        th:nth-child(4), td:nth-child(4),
-        th:nth-child(5), td:nth-child(5) {
-            text-align: center;
-        }
-
-        th { background-color: #171a21; color: #66c0f4; }
-        th { background-color: #171a21; color: #66c0f4; }
-        tr:nth-child(even) { background-color: #223a4c; }
-        
-        .controls { background-color: #171a21; padding: 20px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
-        input[type="text"] { padding: 10px; background-color: #2a475e; border: 1px solid #1b2838; color: white; width: 250px; outline: none; }
-        .btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-add { background-color: #66c0f4; color: #1b2838; }
-        .btn-add:hover { background-color: #4192c0; }
-        .btn-delete { background-color: #c23c2a; color: white; padding: 5px 10px; }
-        .btn-delete:hover { background-color: #a02e1f; }
-        .search-container { position: relative; display: inline-block; }
-        .dropdown {
-            position: absolute; top: 100%; left: 0; background-color: #2a475e; 
-            width: 100%; max-height: 250px; overflow-y: auto; z-index: 1000; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: none; border: 1px solid #171a21;
-        }
-        .dropdown-item { padding: 10px; cursor: pointer; color: #c7d5e0; border-bottom: 1px solid #1b2838; }
+        .controls { background-color: rgba(23, 26, 33, 0.8); padding: 20px; border-radius: 8px; margin-bottom: 30px; display: flex; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .search-container { position: relative; width: 400px; }
+        input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px 20px; background-color: #2a475e; border: 2px solid #1b2838; color: white; border-radius: 25px; outline: none; transition: 0.3s; font-size: 16px; }
+        input[type="text"]:focus { border-color: #66c0f4; box-shadow: 0 0 8px rgba(102, 192, 244, 0.4); }
+        .dropdown { position: absolute; top: 110%; left: 0; background-color: #2a475e; width: 100%; max-height: 300px; overflow-y: auto; z-index: 1000; box-shadow: 0 8px 16px rgba(0,0,0,0.7); display: none; border-radius: 8px; }
+        .dropdown-item { padding: 12px 20px; cursor: pointer; color: #c7d5e0; border-bottom: 1px solid #1b2838; transition: 0.2s; }
         .dropdown-item:hover { background-color: #66c0f4; color: #1b2838; font-weight: bold; }
+
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 20px; }
+        
+        .game-card { background-color: #203040; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 12px rgba(0,0,0,0.4); transition: all 0.3s ease; position: relative; display: flex; flex-direction: column; border: 1px solid transparent; }
+        .game-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(102, 192, 244, 0.3); border-color: #3b5c75; }
+        
+        .game-image { width: 100%; aspect-ratio: 460/215; object-fit: cover; background-color: #171a21; border-bottom: 2px solid #1b2838; }
+        .game-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+        .game-title { font-size: 1.1em; color: #ffffff; font-weight: bold; margin: 0 0 15px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: 0.5px; }
+        
+        .price-block { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding: 8px 12px; background-color: #182430; border-radius: 4px; border: 1px solid #111923; min-height: 40px; }
+        .discount-badge { background-color: #4c6b22; color: #a4d007; padding: 4px 8px; border-radius: 2px; font-weight: bold; font-size: 1.1em; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .prices { text-align: right; margin-left: auto; }
+        .initial-price { color: #72808c; text-decoration: line-through; font-size: 0.85em; display: block; margin-bottom: 2px; }
+        .final-price { color: #a4d007; font-weight: bold; font-size: 1.15em; }
+        .final-price.no-discount { color: #c7d5e0; font-size: 1.1em; }
+
+        .btn-delete { position: absolute; top: 8px; right: 8px; background-color: rgba(0, 0, 0, 0.6); color: #c7d5e0; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; width: 32px; height: 32px; cursor: pointer; font-size: 1.2em; display: flex; align-items: center; justify-content: center; opacity: 0; transition: all 0.2s ease; backdrop-filter: blur(2px); }
+        .game-card:hover .btn-delete { opacity: 1; }
+        .btn-delete:hover { background-color: #e74c3c; color: white; border-color: #e74c3c; transform: scale(1.05); }
+
+       .empty-state { text-align: center; grid-column: 1 / -1; font-size: 1.2em; color: #72808c; padding: 50px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed #3b5c75; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎮 Steam Sales Tracker</h1>
+        <h1>🎮 My Steam Tracker</h1>
         
         <div class="controls">
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Enter game name" oninput="searchGame()" autocomplete="off">
+                <input type="text" id="searchInput" placeholder="🔍 Find a game to track..." oninput="searchGame()" autocomplete="off">
                 <div id="searchDropdown" class="dropdown"></div>
             </div>
-            <span id="statusMessage" style="margin-left: 10px; color: #66c0f4;"></span>
+            <span id="statusMessage" style="margin-left: 15px; color: #66c0f4; align-self: center;"></span>
         </div>
 
-        <p>The list of games we're tracking:</p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Game Title</th>
-                    <th>Price</th>
-                    <th>Discount</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="game : ${games}">
-                    <td th:text="${game.steamAppId}"></td>
-                    <td th:text="${game.title}"></td>
+        <div class="games-grid">
+            <div class="game-card" th:each="game : ${games}">
+                <img th:src="${game.headerImage != null ? game.headerImage : 'https://store.cloudflare.steamstatic.com/public/shared/images/header/logo_steam.svg'}" class="game-image" alt="Game cover">
+                
+                <button class="btn-delete" title="Stop tracking" th:data-appid="${game.steamAppId}" onclick="deleteGame(this.getAttribute('data-appid'))">✕</button>
+                
+                <div class="game-info">
+                    <h3 class="game-title" th:title="${game.title}" th:text="${game.title}">Title</h3>
                     
-                    <td>
-                        <span th:if="${game.discountPercent > 0}">
-                            <del style="color: #72808c; font-size: 0.9em;" th:text="${game.initialPrice} + ' ₴'"></del><br>
-                        </span>
-                        <span style="color: #a4d007; font-weight: bold;" th:text="${game.finalPrice == 0 ? 'Free' 
-                        : game.finalPrice + ' ₴'}"></span>
-                    </td>
-                    
-                    <td>
-                        <span th:if="${game.discountPercent > 0}" style="background-color: #4c6b22; color: #a4d007; 
-                        padding: 3px 6px; border-radius: 2px; font-weight: bold;" th:text="'-' 
-                        + ${game.discountPercent} + '%'"></span>
-                        <span th:if="${game.discountPercent == 0}" style="color: #72808c;">-</span>
-                    </td>
+                    <div class="price-block">
+                        <div th:if="${game.discounted}" class="discount-badge" th:text="${game.discountText}">-0%</div>
+                        <div th:unless="${game.discounted}"></div> <div class="prices">
+                            <span th:if="${game.discounted}" class="initial-price" th:text="${game.initialPriceText}">0 ₴</span>
+                            <span class="final-price" th:classappend="${!game.discounted} ? 'no-discount'" th:text="${game.finalPriceText}">Free</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                    <td>
-                        <button class="btn btn-delete" th:data-appid="${game.steamAppId}" onclick="deleteGame(this.getAttribute('data-appid'))">Delete</button>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(games)}">
-                    <td colspan="5" style="text-align: center;">No games are being tracked yet. Add one using the form above!</td>
-                </tr>
-            </tbody>
-        </table>
+            <div th:if="${#lists.isEmpty(games)}" class="empty-state">
+                Your tracker is empty. Use the search bar above to start adding games! 🕹️
+            </div>
+        </div>
     </div>
 
     <script>
         let searchTimeout;
-
         function searchGame() {
             clearTimeout(searchTimeout);
             const query = document.getElementById('searchInput').value.trim();
             const dropdown = document.getElementById('searchDropdown');
-
-            if (query.length < 3) {
-                dropdown.style.display = 'none';
-                return;
-            }
-
+            if (query.length < 3) { dropdown.style.display = 'none'; return; }
             searchTimeout = setTimeout(() => {
                 fetch('/api/games/search?q=' + encodeURIComponent(query))
                     .then(response => response.json())
@@ -113,8 +91,7 @@
                         if (data.length > 0) {
                             data.forEach(game => {
                                 const div = document.createElement('div');
-                                div.className = 'dropdown-item';
-                                div.innerText = game.name;
+                                div.className = 'dropdown-item'; div.innerText = game.name;
                                 div.onclick = () => {
                                     document.getElementById('searchInput').value = '';
                                     dropdown.style.display = 'none';
@@ -123,34 +100,23 @@
                                 dropdown.appendChild(div);
                             });
                             dropdown.style.display = 'block';
-                        } else {
-                            dropdown.style.display = 'none';
-                        }
+                        } else { dropdown.style.display = 'none'; }
                     });
             }, 500);
         }
-
         function addGameById(appId, gameName) {
             const status = document.getElementById('statusMessage');
             status.innerText = `Adding "${gameName}"...`;
-            
             fetch('/api/games/' + appId, { method: 'POST' })
                 .then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        response.text().then(text => status.innerText = "Error: " + text);
-                    }
-                })
-                .catch(error => status.innerText = "Connection error");
+                    if (response.ok) window.location.reload();
+                    else response.text().then(text => status.innerText = "Error: " + text);
+                }).catch(error => status.innerText = "Connection error");
         }
-
         function deleteGame(appId) {
             if (confirm('Are you sure you want to delete this game?')) {
                 fetch('/api/games/' + appId, { method: 'DELETE' })
-                    .then(response => {
-                        if (response.ok) window.location.reload();
-                    });
+                    .then(response => { if (response.ok) window.location.reload(); });
             }
         }
     </script>
