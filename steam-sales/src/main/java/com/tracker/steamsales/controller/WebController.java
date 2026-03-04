@@ -24,7 +24,7 @@ public class WebController {
 
     @GetMapping("/")
     public String index(Model model) {
-        List<Game> games = gameRepository.findAll();
+       List<Game> games = gameRepository.findAllByOrderByIdDesc();
         List<GameViewDto> gameDtos = new ArrayList<>();
 
         for (Game game : games) {

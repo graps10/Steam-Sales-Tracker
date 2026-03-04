@@ -76,4 +76,12 @@ public class GameController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<SteamApiService.GameSearchResult>> searchGames(@RequestParam String q) {
+        if (q == null || q.trim().isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(steamApiService.searchGames(q));
+    }
 }

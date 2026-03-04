@@ -15,7 +15,7 @@ public class SteamApiService {
     }
 
     public SteamGameData fetchGameData(String appId) {
-        String url = "https://store.steampowered.com/api/appdetails?appids=" + appId;
+        String url = "https://store.steampowered.com/api/appdetails?appids=" + appId + "&cc=UA";
 
         try {
             JsonNode response = restTemplate.getForObject(url, JsonNode.class);
@@ -60,5 +60,29 @@ public class SteamApiService {
             this.finalPrice = finalPrice;
             this.discountPercent = discountPercent;
         }
+    }
+
+    public record GameSearchResult(String appId, String name) {}
+
+    public java.util.List<GameSearchResult> searchGames(String query) {
+        String url = "https://store.steampowered.com/api/storesearch/?term=" + query + "&l=english&cc=UA";
+        java.util.List<GameSearchResult> results = new java.util.ArrayList<>();
+
+        try {
+            JsonNode response = restTemplate.getForObject(url, JsonNode.class);
+
+            if (response != null && response.has("items")) {
+                for (JsonNode item : response.get("items")) {
+                    results.add(new GameSearchResult(
+                            item.get("id").asText(),
+                            item.get("name").asText()
+                    ));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Searching Error in Steam API: " + e.getMessage());
+        }
+
+        return results;
     }
 }

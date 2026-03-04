@@ -27,15 +27,25 @@
         .btn-add:hover { background-color: #4192c0; }
         .btn-delete { background-color: #c23c2a; color: white; padding: 5px 10px; }
         .btn-delete:hover { background-color: #a02e1f; }
+        .search-container { position: relative; display: inline-block; }
+        .dropdown {
+            position: absolute; top: 100%; left: 0; background-color: #2a475e; 
+            width: 100%; max-height: 250px; overflow-y: auto; z-index: 1000; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: none; border: 1px solid #171a21;
+        }
+        .dropdown-item { padding: 10px; cursor: pointer; color: #c7d5e0; border-bottom: 1px solid #1b2838; }
+        .dropdown-item:hover { background-color: #66c0f4; color: #1b2838; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎮 My Steam Tracker</h1>
+        <h1>🎮 Steam Sales Tracker</h1>
         
         <div class="controls">
-            <input type="text" id="appIdInput" placeholder="Enter Steam App ID">
-            <button class="btn btn-add" onclick="addGame()">Add game</button>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Enter game name" oninput="searchGame()" autocomplete="off">
+                <div id="searchDropdown" class="dropdown"></div>
+            </div>
             <span id="statusMessage" style="margin-left: 10px; color: #66c0f4;"></span>
         </div>
 
@@ -83,17 +93,47 @@
     </div>
 
     <script>
-        function addGame() {
-            const appId = document.getElementById('appIdInput').value.trim();
-            const status = document.getElementById('statusMessage');
-            
-            if (!appId) {
-                status.innerText = "Please enter an App ID!";
+        let searchTimeout;
+
+        function searchGame() {
+            clearTimeout(searchTimeout);
+            const query = document.getElementById('searchInput').value.trim();
+            const dropdown = document.getElementById('searchDropdown');
+
+            if (query.length < 3) {
+                dropdown.style.display = 'none';
                 return;
             }
 
-            status.innerText = "Searching for the game...";
+            searchTimeout = setTimeout(() => {
+                fetch('/api/games/search?q=' + encodeURIComponent(query))
+                    .then(response => response.json())
+                    .then(data => {
+                        dropdown.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(game => {
+                                const div = document.createElement('div');
+                                div.className = 'dropdown-item';
+                                div.innerText = game.name;
+                                div.onclick = () => {
+                                    document.getElementById('searchInput').value = '';
+                                    dropdown.style.display = 'none';
+                                    addGameById(game.appId, game.name);
+                                };
+                                dropdown.appendChild(div);
+                            });
+                            dropdown.style.display = 'block';
+                        } else {
+                            dropdown.style.display = 'none';
+                        }
+                    });
+            }, 500);
+        }
 
+        function addGameById(appId, gameName) {
+            const status = document.getElementById('statusMessage');
+            status.innerText = `Adding "${gameName}"...`;
+            
             fetch('/api/games/' + appId, { method: 'POST' })
                 .then(response => {
                     if (response.ok) {
