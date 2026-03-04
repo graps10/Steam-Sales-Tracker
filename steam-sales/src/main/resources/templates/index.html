@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Steam Sales Tracker</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1b2838; color: #c7d5e0; margin: 0; padding: 40px; }
+        h1 { color: #ffffff; }
+        .container { max-width: 800px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: #2a475e; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        th, td { padding: 15px; text-align: left; }
+        
+        th:nth-child(3), td:nth-child(3),
+        th:nth-child(4), td:nth-child(4),
+        th:nth-child(5), td:nth-child(5) {
+            text-align: center;
+        }
+
+        th { background-color: #171a21; color: #66c0f4; }
+        th { background-color: #171a21; color: #66c0f4; }
+        tr:nth-child(even) { background-color: #223a4c; }
+        
+        .controls { background-color: #171a21; padding: 20px; margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+        input[type="text"] { padding: 10px; background-color: #2a475e; border: 1px solid #1b2838; color: white; width: 250px; outline: none; }
+        .btn { padding: 10px 20px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-add { background-color: #66c0f4; color: #1b2838; }
+        .btn-add:hover { background-color: #4192c0; }
+        .btn-delete { background-color: #c23c2a; color: white; padding: 5px 10px; }
+        .btn-delete:hover { background-color: #a02e1f; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 My Steam Tracker</h1>
+        
+        <div class="controls">
+            <input type="text" id="appIdInput" placeholder="Enter Steam App ID">
+            <button class="btn btn-add" onclick="addGame()">Add game</button>
+            <span id="statusMessage" style="margin-left: 10px; color: #66c0f4;"></span>
+        </div>
+
+        <p>The list of games we're tracking:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Game Title</th>
+                    <th>Price</th>
+                    <th>Discount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="game : ${games}">
+                    <td th:text="${game.steamAppId}"></td>
+                    <td th:text="${game.title}"></td>
+                    
+                    <td>
+                        <span th:if="${game.discountPercent > 0}">
+                            <del style="color: #72808c; font-size: 0.9em;" th:text="${game.initialPrice} + ' ₴'"></del><br>
+                        </span>
+                        <span style="color: #a4d007; font-weight: bold;" th:text="${game.finalPrice == 0 ? 'Free' 
+                        : game.finalPrice + ' ₴'}"></span>
+                    </td>
+                    
+                    <td>
+                        <span th:if="${game.discountPercent > 0}" style="background-color: #4c6b22; color: #a4d007; 
+                        padding: 3px 6px; border-radius: 2px; font-weight: bold;" th:text="'-' 
+                        + ${game.discountPercent} + '%'"></span>
+                        <span th:if="${game.discountPercent == 0}" style="color: #72808c;">-</span>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-delete" th:data-appid="${game.steamAppId}" onclick="deleteGame(this.getAttribute('data-appid'))">Delete</button>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(games)}">
+                    <td colspan="5" style="text-align: center;">No games are being tracked yet. Add one using the form above!</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function addGame() {
+            const appId = document.getElementById('appIdInput').value.trim();
+            const status = document.getElementById('statusMessage');
+            
+            if (!appId) {
+                status.innerText = "Please enter an App ID!";
+                return;
+            }
+
+            status.innerText = "Searching for the game...";
+
+            fetch('/api/games/' + appId, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        response.text().then(text => status.innerText = "Error: " + text);
+                    }
+                })
+                .catch(error => status.innerText = "Connection error");
+        }
+
+        function deleteGame(appId) {
+            if (confirm('Are you sure you want to delete this game?')) {
+                fetch('/api/games/' + appId, { method: 'DELETE' })
+                    .then(response => {
+                        if (response.ok) window.location.reload();
+                    });
+            }
+        }
+    </script>
+</body>
+</html>
