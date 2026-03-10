@@ -1,5 +1,7 @@
 package com.tracker.steamsales.controller;
 
+import com.tracker.steamsales.dtos.SteamGameData;
+import com.tracker.steamsales.dtos.GameSearchResult;
 import com.tracker.steamsales.model.Game;
 import com.tracker.steamsales.model.GamePrice;
 import com.tracker.steamsales.repository.GamePriceRepository;
@@ -35,12 +37,12 @@ public class GameController {
             return ResponseEntity.badRequest().body("The game with the ID " + appId + " is already being tracked.");
         }
 
-        SteamApiService.SteamGameData data = steamApiService.fetchGameData(appId);
+        SteamGameData data = steamApiService.fetchGameData(appId);
         if (data == null) {
             return ResponseEntity.badRequest().body("Failed to retrieve data from Steam for ID " + appId);
         }
 
-        Game game = new Game(data.name, appId, data.headerImage);
+        Game game = new Game(data.name, appId, data.headerImage, data.reviewSummary);
         gameRepository.save(game);
 
         GamePrice price = new GamePrice(game, data.finalPrice, data.initialPrice, data.discountPercent);
@@ -56,7 +58,7 @@ public class GameController {
             return ResponseEntity.notFound().build();
         }
 
-        SteamApiService.SteamGameData data = steamApiService.fetchGameData(appId);
+        SteamGameData data = steamApiService.fetchGameData(appId);
         if (data != null) {
             GamePrice newPrice = new GamePrice(game, data.finalPrice, data.initialPrice, data.discountPercent);
             gamePriceRepository.save(newPrice);
@@ -78,7 +80,7 @@ public class GameController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<SteamApiService.GameSearchResult>> searchGames(@RequestParam String q) {
+    public ResponseEntity<List<GameSearchResult>> searchGames(@RequestParam String q) {
         if (q == null || q.trim().isEmpty()) {
             return ResponseEntity.ok(List.of());
         }

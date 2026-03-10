@@ -1,8 +1,16 @@
 package com.tracker.steamsales.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.tracker.steamsales.dtos.GameSearchResult;
+import com.tracker.steamsales.dtos.SteamGameData;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class SteamApiService {
@@ -15,10 +23,26 @@ public class SteamApiService {
     }
 
     public SteamGameData fetchGameData(String appId) {
-        String url = "https://store.steampowered.com/api/appdetails?appids=" + appId + "&cc=UA";
+        String apiUrl = "https://store.steampowered.com/api/appdetails?appids=" + appId + "&cc=UA";
+        String reviewSummary = "No reviews";
 
         try {
-            JsonNode response = restTemplate.getForObject(url, JsonNode.class);
+            Document doc = Jsoup.connect("https://store.steampowered.com/app/" + appId)
+                    .cookie("birthtime", "283993201")
+                    .cookie("lastagecheckage", "1-January-1978")
+                    .header("Accept-Language", "en-US,en;q=0.9")
+                    .get();
+
+            Element reviewElement = doc.selectFirst(".game_review_summary");
+            if (reviewElement != null) {
+                reviewSummary = reviewElement.text();
+            }
+        } catch (Exception e) {
+            System.out.println("HTML Parsing Error: " + e.getMessage());
+        }
+
+        try {
+            JsonNode response = restTemplate.getForObject(apiUrl, JsonNode.class);
 
             if (response != null && response.has(appId)) {
                 JsonNode gameNode = response.get(appId);
@@ -27,50 +51,30 @@ public class SteamApiService {
                 if (success && gameNode.has("data")) {
                     JsonNode dataNode = gameNode.get("data");
                     String name = dataNode.get("name").asText();
+                    String headerImage = dataNode.has("header_image") ? dataNode.get("header_image").asText() : "";
 
                     if (dataNode.has("price_overview")) {
                         JsonNode priceNode = dataNode.get("price_overview");
-                        
                         double initialPrice = priceNode.get("initial").asDouble() / 100;
                         double finalPrice = priceNode.get("final").asDouble() / 100;
                         int discountPercent = priceNode.get("discount_percent").asInt();
-                        String headerImage = dataNode.has("header_image") ? dataNode.get("header_image").asText() : "";
 
-                        return new SteamGameData(name, initialPrice, finalPrice, discountPercent, headerImage);
+                        return new SteamGameData(name, initialPrice, finalPrice, discountPercent, headerImage, reviewSummary);
                     } else {
-                        String headerImage = dataNode.has("header_image") ? dataNode.get("header_image").asText() : "";
-                        return new SteamGameData(name, 0.0, 0.0, 0, headerImage);
+                        return new SteamGameData(name, 0.0, 0.0, 0, headerImage, reviewSummary);
                     }
                 }
             }
         } catch (Exception e) {
-            System.out.println("Parsing Error for game " + appId + ": " + e.getMessage());
+            System.out.println("JSON Parsing Error for game " + appId + ": " + e.getMessage());
         }
         
         return null;
     }
 
-    public static class SteamGameData {
-        public String name;
-        public double initialPrice;
-        public double finalPrice;
-        public int discountPercent;
-        public String headerImage;
-
-        public SteamGameData(String name, double initialPrice, double finalPrice, int discountPercent, String headerImage) {
-            this.name = name;
-            this.initialPrice = initialPrice;
-            this.finalPrice = finalPrice;
-            this.discountPercent = discountPercent;
-            this.headerImage = headerImage;
-        }
-    }
-
-    public record GameSearchResult(String appId, String name) {}
-
-    public java.util.List<GameSearchResult> searchGames(String query) {
+    public List<GameSearchResult> searchGames(String query) {
         String url = "https://store.steampowered.com/api/storesearch/?term=" + query + "&l=english&cc=UA";
-        java.util.List<GameSearchResult> results = new java.util.ArrayList<>();
+        List<GameSearchResult> results = new ArrayList<>();
 
         try {
             JsonNode response = restTemplate.getForObject(url, JsonNode.class);

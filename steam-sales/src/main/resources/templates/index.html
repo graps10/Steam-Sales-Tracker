@@ -36,6 +36,7 @@
         .game-card:hover .btn-delete { opacity: 1; }
         .btn-delete:hover { background-color: #e74c3c; color: white; border-color: #e74c3c; transform: scale(1.05); }
 
+        .review-badge { background-color: rgba(102, 192, 244, 0.2); color: #66c0f4; padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold; margin-bottom: 10px; display: inline-block; width: fit-content; }
        .empty-state { text-align: center; grid-column: 1 / -1; font-size: 1.2em; color: #72808c; padding: 50px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed #3b5c75; }
     </style>
 </head>
@@ -59,7 +60,7 @@
                 
                 <div class="game-info">
                     <h3 class="game-title" th:title="${game.title}" th:text="${game.title}">Title</h3>
-                    
+                    <div class="review-badge" th:text="${game.reviewSummary}">Very Positive</div>
                     <div class="price-block">
                         <div th:if="${game.discounted}" class="discount-badge" th:text="${game.discountText}">-0%</div>
                         <div th:unless="${game.discounted}"></div> <div class="prices">

@@ -1,5 +1,6 @@
 package com.tracker.steamsales.service;
 
+import com.tracker.steamsales.dtos.SteamGameData;
 import com.tracker.steamsales.model.Game;
 import com.tracker.steamsales.model.GamePrice;
 import com.tracker.steamsales.repository.GamePriceRepository;
@@ -29,7 +30,7 @@ public class PriceUpdateScheduler {
         List<Game> games = gameRepository.findAll();
         
         for (Game game : games) {
-            SteamApiService.SteamGameData data = steamApiService.fetchGameData(game.getSteamAppId());
+            SteamGameData data = steamApiService.fetchGameData(game.getSteamAppId());
             
             if (data != null) {
                 GamePrice newPrice = new GamePrice(game, data.finalPrice, data.initialPrice, data.discountPercent);

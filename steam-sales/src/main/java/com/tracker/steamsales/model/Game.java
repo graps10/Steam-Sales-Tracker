@@ -18,15 +18,17 @@ public class Game
 
     @Column(name = "header_image")
     private String headerImage;
+    private String reviewSummary;
 
     public Game() {
     }
 
-    public Game(String title, String steamAppId, String headerImage) {
-        this.title = title;
-        this.steamAppId = steamAppId;
-        this.headerImage = headerImage;
-    }
+    public Game(String title, String steamAppId, String headerImage, String reviewSummary) {
+     this.title = title;
+     this.steamAppId = steamAppId;
+     this.headerImage = headerImage;
+     this.reviewSummary = reviewSummary;
+ }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -39,4 +41,7 @@ public class Game
 
     public String getHeaderImage() { return headerImage; }
     public void setHeaderImage(String headerImage) { this.headerImage = headerImage; }
+
+    public String getReviewSummary() { return reviewSummary; }
+    public void setReviewSummary(String reviewSummary) { this.reviewSummary = reviewSummary; }
 }
